@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Cabina</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .cabin-view-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100%;
+            gap: 2rem;
+            text-align: center;
+        }
+        
+        .cabin-hero {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 4rem;
+            border-radius: 40px;
+            backdrop-filter: blur(20px);
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5);
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cabin-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--status-color, var(--available-color));
+        }
+
+        .view-number {
+            font-size: 8rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--status-color, var(--available-color));
+            text-shadow: 0 0 40px var(--status-glow, var(--available-glow));
+        }
+
+        .view-status {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 2rem;
+            color: #94a3b8;
+        }
+
+        .view-timer {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 5rem;
+            font-weight: 700;
+            margin: 2rem 0;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .action-btn {
+            border: none;
+            padding: 1.5rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn-start {
+            background: var(--available-color);
+            color: #000;
+            box-shadow: 0 10px 20px var(--available-glow);
+        }
+
+        .btn-finish {
+            background: var(--occupied-color);
+            color: #fff;
+            box-shadow: 0 10px 20px var(--occupied-glow);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px);
+            filter: brightness(1.1);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-locked {
+            background: #334155;
+            color: #64748b;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .error-msg {
+            color: var(--occupied-color);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="cabin-view-container">
+        <div id="app-content" class="cabin-hero">
+            <p>Cargando cabina...</p>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="storage.js"></script>
+    <script>
+        const appContent = document.getElementById('app-content');
+        const urlParams = new URLSearchParams(window.location.search);
+        const cabinId = parseInt(urlParams.get('id'));
+
+
+        async function getData() {
+            return await StorageManager.loadData();
+        }
+
+        async function saveData(data) {
+            await StorageManager.saveData(data);
+        }
+
+        async function render() {
+            if (isNaN(cabinId)) {
+                appContent.innerHTML = `<h2 class="error-msg">Error: ID de cabina no especificado</h2><p>Usa ?id=N en la URL</p>`;
+                return;
+            }
+
+            const data = await getData();
+            const cabin = data.find(c => c.id === cabinId);
+
+            if (!cabin) {
+                appContent.innerHTML = `<h2 class="error-msg">Cabina ${cabinId} no encontrada</h2>`;
+                return;
+            }
+
+            const statusColors = {
+                available: '#10b981',
+                occupied: '#ef4444',
+                maintenance: '#64748b'
+            };
+
+            const statusGlows = {
+                available: 'rgba(16, 185, 129, 0.4)',
+                occupied: 'rgba(239, 68, 68, 0.4)',
+                maintenance: 'rgba(100, 116, 139, 0.4)'
+            };
+
+            document.body.style.setProperty('--status-color', statusColors[cabin.status]);
+            document.body.style.setProperty('--status-glow', statusGlows[cabin.status]);
+
+            let content = `
+                <div class="view-number">${cabin.id.toString().padStart(2, '0')}</div>
+                <div class="view-status">${cabin.status === 'available' ? 'LIBRE' : (cabin.status === 'occupied' ? 'OCUPADA' : 'EN PAUSA')}</div>
+            `;
+
+            if (cabin.status === 'occupied') {
+                content += `<button class="action-btn btn-finish" onclick="finishSession()">LIBERAR CABINA</button>`;
+            } else if (cabin.status === 'available') {
+                content += `<button class="action-btn btn-start" onclick="startSession()">EMPEZAR TRABAJO</button>`;
+            } else {
+                content += `<div class="view-timer">BLOQUEADA</div>`;
+                content += `<button class="action-btn btn-locked" disabled>CABINA EN PAUSA</button>`;
+            }
+
+            appContent.innerHTML = content;
+        }
+
+        window.startSession = async () => {
+            const data = await getData();
+            const cabinIndex = data.findIndex(c => c.id === cabinId);
+            if (cabinIndex === -1) return;
+
+            const cabin = data.splice(cabinIndex, 1)[0];
+            cabin.status = 'occupied';
+            cabin.endTime = null;
+
+            const lastOccupiedIndex = data.findLastIndex(c => c.status === 'occupied');
+            if (lastOccupiedIndex === -1) {
+                const lastAvailableIndex = data.findLastIndex(c => c.status === 'available');
+                data.splice(lastAvailableIndex + 1, 0, cabin);
+            } else {
+                data.splice(lastOccupiedIndex + 1, 0, cabin);
+            }
+
+            await saveData(data);
+            render();
+        };
+
+        window.finishSession = async () => {
+            const data = await getData();
+            const cabinIndex = data.findIndex(c => c.id === cabinId);
+            if (cabinIndex === -1) return;
+
+            const cabin = data.splice(cabinIndex, 1)[0];
+            cabin.status = 'available';
+            cabin.endTime = null;
+
+            const lastAvailableIndex = data.findLastIndex(c => c.status === 'available');
+            if (lastAvailableIndex === -1) {
+                data.unshift(cabin);
+            } else {
+                data.splice(lastAvailableIndex + 1, 0, cabin);
+            }
+
+            await saveData(data);
+            render();
+        };
+
+        // Sync con otras computadoras/pestañas
+        StorageManager.onSync(render);
+
+        render();
+    </script>
+</body>
+</html>

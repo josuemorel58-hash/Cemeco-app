@@ -1,0 +1,377 @@
+:root {
+    --bg-color: #0f172a;
+    --text-color: #f8fafc;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --card-border: rgba(255, 255, 255, 0.1);
+    
+    --available-color: #10b981;
+    --available-glow: rgba(16, 185, 129, 0.4);
+    --available-bg: rgba(16, 185, 129, 0.1);
+    
+    --occupied-color: #ef4444;
+    --occupied-glow: rgba(239, 68, 68, 0.4);
+    --occupied-bg: rgba(239, 68, 68, 0.1);
+    
+    --maintenance-color: #94a3b8;
+    --maintenance-glow: rgba(148, 163, 184, 0.4);
+    --maintenance-bg: rgba(148, 163, 184, 0.1);
+    
+    --next-color: #f59e0b;
+    --next-glow: rgba(245, 158, 11, 0.4);
+    
+    --font-family: 'Outfit', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.stat-badge.maintenance .stat-dot {
+    background-color: var(--maintenance-color);
+    box-shadow: 0 0 10px var(--maintenance-glow);
+}
+
+.maintenance-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    font-size: 0.9rem;
+}
+
+.maintenance-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(45deg);
+}
+
+.view-link-btn {
+    position: absolute;
+    top: 15px;
+    right: 55px; /* Al lado del botón de configuración */
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    font-size: 0.8rem;
+}
+
+.view-link-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.next-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: var(--next-color);
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 15px var(--next-glow);
+    animation: pulse 2s infinite;
+    z-index: 5;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.cabin-card.next-up {
+    border-color: var(--next-color) !important;
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.2) !important;
+}
+
+.cabin-card[data-status="maintenance"] {
+    opacity: 0.6;
+    background: rgba(30, 41, 59, 0.4);
+    cursor: default;
+}
+
+.cabin-card[data-status="maintenance"] .cabin-number {
+    color: var(--maintenance-color);
+    text-shadow: none;
+}
+
+.cabin-card[data-status="maintenance"] .cabin-status {
+    background-color: var(--maintenance-bg);
+    color: var(--maintenance-color);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.app-container {
+    width: 100%;
+    max-width: 1200px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--card-border);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(to right, #f8fafc, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat-badge {
+    padding: 0.5rem 1.2rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+}
+
+.stat-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.stat-badge.available .stat-dot {
+    background-color: var(--available-color);
+    box-shadow: 0 0 10px var(--available-glow);
+}
+
+.stat-badge.occupied .stat-dot {
+    background-color: var(--occupied-color);
+    box-shadow: 0 0 10px var(--occupied-glow);
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Cabin Card Styles */
+.cabin-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.cabin-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cabin-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cabin-card:hover::before {
+    opacity: 1;
+}
+
+.cabin-card:active {
+    transform: scale(0.98);
+}
+
+.cabin-number {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+    z-index: 1;
+}
+
+.cabin-status {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+/* Available State */
+.cabin-card[data-status="available"] {
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 0 0 1px transparent;
+}
+
+.cabin-card[data-status="available"]:hover {
+    box-shadow: 0 20px 40px -10px var(--available-glow), inset 0 0 0 1px var(--available-color);
+}
+
+.cabin-card[data-status="available"] .cabin-number {
+    color: var(--available-color);
+    text-shadow: 0 0 20px var(--available-glow);
+}
+
+.cabin-card[data-status="available"] .cabin-status {
+    background-color: var(--available-bg);
+    color: var(--available-color);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Occupied State */
+.cabin-card[data-status="occupied"] {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+}
+
+.cabin-card[data-status="occupied"]:hover {
+    box-shadow: 0 20px 40px -10px var(--occupied-glow), inset 0 0 0 1px var(--occupied-color);
+}
+
+.cabin-card[data-status="occupied"] .cabin-number {
+    color: var(--occupied-color);
+    text-shadow: 0 0 20px var(--occupied-glow);
+}
+
+.cabin-card[data-status="occupied"] .cabin-status {
+    background-color: var(--occupied-bg);
+    color: var(--occupied-color);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+
+/* Animations */
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.cabin-card {
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    opacity: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .app-container {
+        padding: 1.5rem;
+    }
+    
+    .grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+    
+    .cabin-number {
+        font-size: 3rem;
+    }
+
+    .cabin-timer {
+        font-size: 1.1rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
