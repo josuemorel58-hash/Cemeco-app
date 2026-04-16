@@ -61,21 +61,32 @@ const StorageManager = {
     },
 
     onSync(callback) {
+        let syncTimeout;
+        let lastSyncData = '';
+
+        const debouncedSync = async () => {
+            clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(async () => {
+                const newData = await this.loadData();
+                const dataString = JSON.stringify(newData);
+                
+                // Solo ejecutar el callback si los datos realmente cambiaron
+                if (dataString !== lastSyncData) {
+                    lastSyncData = dataString;
+                    callback(newData);
+                }
+            }, 100); // 100ms de espera para agrupar cambios
+        };
+
         if (USE_SUPABASE && supabaseClient) {
             // Suscribirse a cambios en tiempo real
             supabaseClient
                 .channel('public:cabinas')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'cabinas' }, async () => {
-                    const newData = await this.loadData();
-                    callback(newData);
-                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'cabinas' }, debouncedSync)
                 .subscribe();
         }
         
-        window.addEventListener('storage', async () => {
-            const newData = await this.loadData();
-            callback(newData);
-        });
+        window.addEventListener('storage', debouncedSync);
     }
 };
 
